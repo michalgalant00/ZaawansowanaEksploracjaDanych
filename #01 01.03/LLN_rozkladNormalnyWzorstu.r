@@ -42,12 +42,3 @@ for(i in 1:length(n_seq))
 plot(n_seq, x_bar_seq, main='LLN', col='black', cex=0.4, xlab='n', ylab='x_bar') # punkty to srednie z danej proby (proba caly czas sie zwieksza - n)
 lines(x=n_seq, y=x_bar_seq, type='l', col='red')
 abline(a=mu, b=0, col='black')
-
-
-
-# 
-#   zrobic to samo dla kostki
-#   p(i)=1/6
-#   xi = {1,2,3,4,5,6} - populacja
-#   E(xi) = 3,5 (ze wzoru) - abline
-#   losowanie używając sample() zamiast rnorm() (dlaczego?)
