@@ -27,3 +27,6 @@ for(i in 1:length(n_seq)) {
 plot(n_seq, x_bar_seq, main='LLN dla kostki szesciennej', col='black', cex=0.4, xlab='n', ylab='x_bar') # Punkty to średnie z danej próby (próba cały czas się zwiększa - n)
 lines(x = n_seq, y = x_bar_seq, type = 'l', col = 'red') # Linia łącząca punkty
 abline(a = mu, b = 0, col = 'black') # Linia dla wartości oczekiwanej
+
+
+# UZUPEŁNIC O 3 KOSTKI
