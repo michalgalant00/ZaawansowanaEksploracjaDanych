@@ -82,8 +82,4 @@ hist(dta[dta&sex=='male','height'], xlab='male', main='')
 title('Distribution of MALE heights')
 
 
-# wygenerowac dane na podstawie jakichs danych - przecietne itd
-# dla wybranego kraju, w latach 1880 i 1980
-# country    year    height    sex     weight
-
 
