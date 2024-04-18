@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "CountryData summary"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -17,30 +17,75 @@ library(flexdashboard)
 
 myFile = "./france.RData"
 
-myData = readRDS(myFile)
+countryData = readRDS(myFile)
+
+# Wybierz dane dla lat 1880 i 1980 oraz dla kobiet i mężczyzn
+subset_data = subset(countryData, year %in% c(1880, 1980) & sex %in% c("Male", "Female"))
 ```
 
-Column {data-width=650}
+
+France data
+=======================================================================
+
+Column
 -----------------------------------------------------------------------
 
-### Chart A
+### Rozkład wag dla lat 1880 i 1980
 
 ```{r}
 
+p = ggplot(subset_data, aes(x = weight, fill = factor(year))) +
+  geom_dotplot(binaxis = "y", stackdir = "center", alpha = 0.5) +
+  labs(x = "Waga",
+       y = "Gęstość") +
+  facet_wrap(~sex)
+
+p
+
 ```
 
-Column {data-width=350}
+### Rozkład wzrostu dla lat 1880 i 1980
+
+```{r}
+
+p = ggplot(subset_data, aes(x = height, fill = factor(year))) +
+  geom_dotplot(binaxis = "y", stackdir = "center", alpha = 0.5) +
+  labs(x = "Wzrost",
+       y = "Gęstość") +
+  facet_wrap(~sex)
+
+p
+
+```
+
+Column
 -----------------------------------------------------------------------
 
-### Chart B
+### Rozkład BMI dla lat 1880 i 1980
 
 ```{r}
+
+p = ggplot(subset_data, aes(x = bmi, fill = factor(year))) +
+  geom_density(alpha = 0.5) +
+  labs(x = "BMI",
+       y = "Gęstość") +
+  facet_wrap(~sex)
+
+p
 
 ```
 
-### Chart C
+### Porównanie średniej wagi między latami 1880 i 1980
 
 ```{r}
+
+p = ggplot(subset_data, aes(x = factor(year), y = weight, fill = factor(year))) +
+  geom_boxplot() +
+  labs(x = "Rok",
+       y = "Waga") +
+  facet_wrap(~sex)
+
+p
 
 ```
 
