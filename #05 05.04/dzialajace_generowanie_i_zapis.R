@@ -2,15 +2,17 @@
 #====
 dgp_heights <- function(n, sex, year, seed=NULL) {
   if (!is.null(seed)) set.seed(seed)
+  year = as.character(year)
   
   # Definicja średnich wartości wzrostu w zależności od płci i roku
-  avg_height <- list(
-    Male = c("1880" = 167.5, "1980" = 175.5),
-    Female = c("1880" = 154.5, "1980" = 164.5)
+  avg_height <- data.frame(
+    Year = c(1880, 1980),
+    Male = c(167.5, 175.5),
+    Female = c(154.5, 164.5)
   )
   
   # Wybór danych dla danej płci i roku
-  avg_values <- avg_height[[sex]][[as.character(year)]]
+  avg_values <- subset(avg_height, Year == year)[[sex]]
   
   # Generowanie danych
   height <- rnorm(n, mean = avg_values, sd = 6)
@@ -20,15 +22,17 @@ dgp_heights <- function(n, sex, year, seed=NULL) {
 
 dgp_weights <- function(n, sex, year, seed=NULL) {
   if (!is.null(seed)) set.seed(seed)
+  year = as.character(year)
   
   # Definicja średnich wartości wagi w zależności od płci i roku
-  avg_weight <- list(
-    Male = c("1880" = 67.5, "1980" = 77.5),
-    Female = c("1880" = 52.5, "1980" = 62.5)
+  avg_weight <- data.frame(
+    Year = c(1880, 1980),
+    Male = c(67.5, 77.5),
+    Female = c(52.5, 62.5)
   )
   
   # Wybór danych dla danej płci i roku
-  avg_values <- avg_weight[[sex]][[as.character(year)]]
+  avg_values <- subset(avg_weight, Year == year)[[sex]]
   
   # Generowanie danych
   weight <- rnorm(n, mean = avg_values, sd = 10)
@@ -36,24 +40,18 @@ dgp_weights <- function(n, sex, year, seed=NULL) {
   return(round(weight, 2))
 }
 
-dgp_bmis <- function(n, sex, year, seed=NULL) {
-  if (!is.null(seed)) set.seed(seed)
-  
-  # Pobieranie danych dotyczących wzrostu i wagi
-  height <- dgp_heights(n, sex, year, seed)
-  weight <- dgp_weights(n, sex, year, seed)
-  
+dgp_bmis <- function(heights, weights) {
   # Obliczanie BMI
-  bmi <- weight / ((height / 100) ^ 2)
+  bmis <- weights / ((heights / 100) ^ 2)
   
-  return(round(bmi, 2))
+  return(round(bmis, 2))
 }
 
 # Przykładowe użycie
-set.seed(123)  # Ustawienie ziarna dla reprodukowalności
-dgp_heights(10, "Male", "1980")
-dgp_weights(10, "Male", "1980")
-dgp_bmis(10, "Male", "1980")
+set.seed(2137)  # Ustawienie ziarna dla reprodukowalności
+h= dgp_heights(10, "Male", 1980)
+w= dgp_weights(10, "Male", 1980)
+dgp_bmis(h, w)
 
 #====
 #zapis tych danych do arkusza
@@ -65,33 +63,52 @@ mysheet <- gs4_create("mojsheet", sheets = list(FR=NULL, Overview=NULL))
 mysheet_key <- '1ax3aMHKLFYyJb0yjgvWClt8wTpflUVqIHkNuVXC26Lo'  # Ustawianie klucza arkusza
 
 # Funkcja do generowania danych i zapisywania ich do arkusza
-generate_and_write_data <- function(year, sex) {
+generate_and_write_data <- function(n, year, sex) {
   # Generowanie danych
-  heights <- dgp_heights(100, sex, year)
-  weights <- dgp_weights(100, sex, year)
-  bmis <- dgp_bmis(100, sex, year)
+  heights <- dgp_heights(n, sex, year)
+  weights <- dgp_weights(n, sex, year)
+  bmis <- dgp_bmis(heights, weights)
+  
+  header <- data.frame(
+    year = 'year',
+    sex = 'sex',
+    country = 'country',
+    weight = 'weight',
+    height = 'height',
+    bmi = 'bmi'
+  )
   
   # Tworzenie ramki danych
   mydata <- data.frame(
-    year = rep(year, 100),
-    sex = rep(sex, 100),
-    country = rep("FR", 100),  # Zakładam, że kraj to zawsze Francja
+    year = rep(year, n),
+    sex = rep(sex, n),
+    country = rep("FR", n),  # Zakładam, że kraj to zawsze Francja
     weight = weights,
     height = heights,
     bmi = bmis
   )
   
   # Zapisywanie danych do arkusza kalkulacyjnego
-  sheet_append(data=mydata, ss=mysheet_key, sheet = 'FR')
+  sheet_append(data=mydata, ss=mysheet_key, sheet='FR')
 }
 
 # Generowanie i zapisywanie danych dla każdego roku i płci
 years <- c(1880, 1980)
 sexes <- c("Male", "Female")
 
+header <- data.frame(
+  year = 'year',
+  sex = 'sex',
+  country = 'country',
+  weight = 'weight',
+  height = 'height',
+  bmi = 'bmi'
+)
+
+sheet_append(data=header, ss=mysheet_key, sheet='FR')
 for (year in years) {
   for (sex in sexes) {
-    generate_and_write_data(year, sex)
+    generate_and_write_data(2000, year, sex)
   }
 }
 
