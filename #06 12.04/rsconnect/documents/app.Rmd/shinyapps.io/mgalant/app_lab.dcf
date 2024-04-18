@@ -1,0 +1,12 @@
+name: app_lab
+title: app_lab
+username: mgalant
+account: mgalant
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11742351
+bundleId: 8486132
+url: https://mgalant.shinyapps.io/app_lab/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

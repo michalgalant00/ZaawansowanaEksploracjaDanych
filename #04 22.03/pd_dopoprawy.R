@@ -3,20 +3,24 @@
 # wygenerowac przykładowe dane na podstawie danych:
 # Male:
 #   Year: 1880
-# Avg height: 167.5 cm
-# Avg weight: 67.5 kg
+#     Avg height: 167.5 cm
+#     Avg weight: 67.5 kg
+#     BMI: 24.12
 #   Year: 1980
-# Avg height: 175.5 cm
-# Avg weight: 77.5 kg
+#     Avg height: 175.5 cm
+#     Avg weight: 77.5 kg
+#     BMI: 25.18
 # Female:
 #   Year: 1880
-# Avg height: 154.5 cm
-# Avg weight: 52.5 kg
+#     Avg height: 154.5 cm
+#     Avg weight: 52.5 kg
+#     BMI: 22.01
 #   Year: 1980
-# Avg height: 164.5 cm
-# Avg weight: 62.5 kg
+#     Avg height: 164.5 cm
+#     Avg weight: 62.5 kg
+#     BMI: 23.11
 # dla wybranego kraju (dane zebrane dla Francji), w latach 1880 i 1980
-# country    year    height    sex     weight
+# year,sex,country,weight,height,bmi
 # ====
 
 dgp_weights = function(n, sex, year, seed=NULL) {
