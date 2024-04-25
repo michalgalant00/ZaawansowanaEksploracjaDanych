@@ -1,5 +1,5 @@
 ---
-title: "CountryData summary"
+title: "heights and weights around the world"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -15,12 +15,13 @@ library(plyr)
 library(dplyr)
 library(flexdashboard)
 
-myFile = "./france.RData"
 
-countryData = readRDS(myFile)
+file = "./allCountries.RData"
+data = readRDS(file)
 
-# Wybierz dane dla lat 1880 i 1980 oraz dla kobiet i mężczyzn
-subset_data = subset(countryData, year %in% c(1880, 1980) & sex %in% c("Male", "Female"))
+# dane dla Francji
+fr_data = subset(data, country == 'FR')
+
 ```
 
 
@@ -30,30 +31,32 @@ France data
 Column
 -----------------------------------------------------------------------
 
-### Rozkład wag dla lat 1880 i 1980
+### Distribution of weights for the years 1880 and 1980
 
 ```{r}
 
-p = ggplot(subset_data, aes(x = weight, fill = factor(year))) +
-  geom_dotplot(binaxis = "y", stackdir = "center", alpha = 0.5) +
-  labs(x = "Waga",
-       y = "Gęstość") +
+p = ggplot(fr_data, aes(x = height, fill = factor(year))) +
+  geom_histogram(binwidth = 5, alpha = 0.5, position = "identity") +
+  labs(x = "Height",
+       y = "Density") +
   facet_wrap(~sex)
 
+p = ggplotly(p)
 p
 
 ```
 
-### Rozkład wzrostu dla lat 1880 i 1980
+### Distribution of heights for the years 1880 and 1980
 
 ```{r}
 
-p = ggplot(subset_data, aes(x = height, fill = factor(year))) +
-  geom_dotplot(binaxis = "y", stackdir = "center", alpha = 0.5) +
-  labs(x = "Wzrost",
-       y = "Gęstość") +
+p = ggplot(fr_data, aes(x = weight, fill = factor(year))) +
+  geom_histogram(binwidth = 5, alpha = 0.5, position = "identity") +
+  labs(x = "Weight",
+       y = "Density") +
   facet_wrap(~sex)
 
+p = ggplotly(p)
 p
 
 ```
@@ -61,31 +64,139 @@ p
 Column
 -----------------------------------------------------------------------
 
-### Rozkład BMI dla lat 1880 i 1980
+### Distribution of BMI for the years 1880 and 1980
 
 ```{r}
 
-p = ggplot(subset_data, aes(x = bmi, fill = factor(year))) +
+p = ggplot(fr_data, aes(x = bmi, fill = factor(year))) +
   geom_density(alpha = 0.5) +
   labs(x = "BMI",
-       y = "Gęstość") +
+       y = "Density") +
   facet_wrap(~sex)
 
+p = ggplotly(p)
 p
 
 ```
 
-### Porównanie średniej wagi między latami 1880 i 1980
+### Comparison of average weight between the years 1880 and 1980
 
 ```{r}
 
-p = ggplot(subset_data, aes(x = factor(year), y = weight, fill = factor(year))) +
+p = ggplot(fr_data, aes(x = factor(year), y = weight, fill = factor(year))) +
   geom_boxplot() +
-  labs(x = "Rok",
-       y = "Waga") +
+  labs(x = "Year",
+       y = "Weight") +
   facet_wrap(~sex)
 
+p = ggplotly(p)
 p
 
 ```
 
+
+France v country data
+=======================================================================
+
+Column
+-----------------------------------------------------------------------
+
+### Comparison of average weight between french people and selected country in selected year in selected sex
+
+```{r}
+output$weight_plot <- renderPlotly({
+  p_weight <- ggplot(subset(data, country %in% c('FR', input$country) & sex %in% input$sex),
+                     aes(x = factor(year), y = weight, fill = country)) +
+    geom_bar(stat = "summary", fun = "mean", position = "dodge") +
+    labs(x = "Year",
+         y = "Average Weight",
+         fill = "Country") +
+    facet_wrap(~sex)
+
+  ggplotly(p_weight)
+})
+
+plotlyOutput('weight_plot')
+```
+
+### Comparison of average height between french people and selected country in selected year in selected sex
+
+```{r}
+output$height_plot <- renderPlotly({
+  p_height <- ggplot(subset(data, country %in% c('FR', input$country) & sex %in% input$sex),
+                     aes(x = factor(year), y = height, fill = country)) +
+    geom_bar(stat = "summary", fun = "mean", position = "dodge") +
+    labs(x = "Year",
+         y = "Average Height",
+         fill = "Country") +
+    facet_wrap(~sex)
+
+  ggplotly(p_height)
+})
+
+plotlyOutput('height_plot')
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Small 'data cloud' of weight by height data of selected sex in France and selected country
+
+```{r}
+output$scatter_plot <- renderPlotly({
+  sampled_data <- data %>%
+    filter(country %in% c('FR', input$country) & sex %in% input$sex) %>%
+    group_by(country) %>%
+    sample_n(150)
+
+  p_scatter <- ggplot(sampled_data, aes(x = height, y = weight, color = country)) +
+    geom_point(alpha = 0.7, size = 2) +
+    labs(x = "Height",
+         y = "Weight",
+         color = "Country") +
+    facet_wrap(~sex)
+
+  ggplotly(p_scatter)
+})
+
+plotlyOutput('scatter_plot')
+```
+
+### Filters
+```{r}
+selectInput("country", "country:", choices = unique(data$country), selected = 'AF')
+checkboxGroupInput("sex", "sex:", choices = unique(data$sex), selected = c("male", "female"))
+```
+
+
+All countries
+=======================================================================
+
+Column
+-----------------------------------------------------------------------
+
+### Histogram of selected parameter in selected countries (checkboxes)
+
+```{r}
+
+```
+
+### Filters
+```{r}
+selectInput("parameter", "parameter:", choices = c('height', 'weight'), selected = 'height')
+checkboxGroupInput("countries", "country:", choices = unique(data$country), selected = unique(data$country))
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Dumbbell plot
+
+```{r}
+#dumbbell plot - all countries on Y axis and value of selected parameter on X axis
+```
+
+### Filters
+```{r}
+selectInput("dumbbell_parameter", "parameter:", choices = c('height', 'weight'), selected = 'height')
+```
