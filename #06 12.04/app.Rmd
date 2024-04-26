@@ -41,8 +41,7 @@ p = ggplot(fr_data, aes(x = height, fill = factor(year))) +
        y = "Density") +
   facet_wrap(~sex)
 
-p = ggplotly(p)
-p
+ggplotly(p)
 
 ```
 
@@ -56,8 +55,7 @@ p = ggplot(fr_data, aes(x = weight, fill = factor(year))) +
        y = "Density") +
   facet_wrap(~sex)
 
-p = ggplotly(p)
-p
+ggplotly(p)
 
 ```
 
@@ -74,8 +72,7 @@ p = ggplot(fr_data, aes(x = bmi, fill = factor(year))) +
        y = "Density") +
   facet_wrap(~sex)
 
-p = ggplotly(p)
-p
+ggplotly(p)
 
 ```
 
@@ -89,8 +86,7 @@ p = ggplot(fr_data, aes(x = factor(year), y = weight, fill = factor(year))) +
        y = "Weight") +
   facet_wrap(~sex)
 
-p = ggplotly(p)
-p
+ggplotly(p)
 
 ```
 
@@ -175,10 +171,40 @@ All countries
 Column
 -----------------------------------------------------------------------
 
-### Histogram of selected parameter in selected countries (checkboxes)
+### Histogram of selected parameter in selected countries
 
 ```{r}
+# Rysowanie histogramu wybranego parametru dla wybranych krajów
+output$hist_plot <- renderPlot({
 
+  # Filtracja danych na podstawie wybranych krajów
+  filtered_data <- data %>%
+    filter(country %in% input$hist_countries)
+
+  # Wybór kolumny dla wybranego parametru
+  parameter_column <- switch(input$hist_parameter,
+                             "height" = height,
+                             "weight" = weight)
+
+  # Wykres histogramu
+  ggplot(filtered_data, aes(x = !!sym(parameter_column))) +
+    geom_histogram(fill = "skyblue", color = "black", bins = 30) +
+    facet_wrap(~country, scales = "free") + # Facetowanie na podstawie krajów
+    labs(x = input$hist_parameter, y = "Frequency", 
+         title = paste("Histogram of", input$hist_parameter, "in selected countries")) +
+    theme_bw(base_family="Lato") +
+    theme(
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      panel.border=element_blank(),
+      axis.text=element_text(size=8),
+      axis.title=element_text(size=10,face="bold"),
+      plot.title=element_text(size=14, face="bold"),
+      strip.text = element_text(size = 8, face = "bold")
+    )
+})
+
+plotlyOutput('hist_plot')
 ```
 
 ### Filters
@@ -193,10 +219,63 @@ Column
 ### Dumbbell plot
 
 ```{r}
-#dumbbell plot - all countries on Y axis and value of selected parameter on X axis
+output$dumbbell_plot <- renderPlot({
+  filtered_data <- data %>%
+    filter(year == input$dumbbell_year)
+
+  parameter_column <- switch(input$dumbbell_parameter,
+                             "height" = height,
+                             "weight" = weight)
+
+  ggplot(filtered_data, aes(x = !!sym(parameter_column), y = country)) +
+    geom_line(linewidth = 3, color = "grey") +
+    geom_point(aes(color = sex), size = 3, show.legend = FALSE) +
+    scale_color_brewer(palette = "Set1", direction = 1) +
+    theme(legend.position = "right") +
+    
+    geom_text(data=filter(filtered_data, country=="Czarnogóra" & sex == "female"),
+              aes(x=!!sym(parameter_column), y=country, label="Female"),
+              color="red", size=3, vjust=-1.5, fontface="bold", family="Lato") +
+    
+    geom_text(data=filter(filtered_data, country=="Czarnogóra" & sex == "male"),
+              aes(x=!!sym(parameter_column), y=country, label="Male"),
+              color="blue", size=3, vjust=-1.5, fontface="bold", family="Lato") +
+    
+    geom_text(aes(label=!!sym(parameter_column)), color="black", size=2.75, vjust=2.5, family="Lato") +
+
+    geom_rect(aes(xmin=190, xmax=200, ymin=-Inf, ymax=Inf), fill="#EBEBEB") +
+    geom_text(aes(label="Difference", y=country, x=195), fontface="bold", size=3, family="Lato") +
+    geom_text(data=filter(filtered_data, country=="Czarnogóra"),
+              aes(x=195, y=country, label="Difference"),
+              color="black", size=3.1, vjust=-2, fontface="bold", family="Lato") + 
+    
+    scale_x_continuous(expand=c(0,0), limits=c(130, 200)) +
+    scale_y_discrete(expand=c(0.1,0)) + 
+
+    labs(x=NULL, y=NULL, title="", subtitle="", caption="MG") +
+    
+    theme_bw(base_family="Lato") +
+    theme(
+      panel.grid.major=element_blank(),
+      panel.grid.major.y = element_line(color = "grey",size=0.3),
+      panel.grid.minor=element_blank(),
+      panel.border=element_blank(),
+      axis.ticks=element_blank(),
+      axis.text.x=element_blank(),
+      plot.title=element_text(size = 16, face="bold"),
+      plot.title.position = "plot",
+      plot.subtitle=element_text(face="italic", size=12, margin=margin(b=12)),
+      plot.caption=element_text(size=8, margin=margin(t=12), color="#7a7d7e")
+    )
+})
+
+plotlyOutput('dumbbell_plot')
 ```
 
 ### Filters
 ```{r}
 selectInput("dumbbell_parameter", "parameter:", choices = c('height', 'weight'), selected = 'height')
+selectInput("dumbbell_year", "year:", choices = c(1880, 1980), selected = 1880)
+
+# cos robil: https://chat.openai.com/share/39a055ce-fef6-4990-9d09-461d4689d96e
 ```
